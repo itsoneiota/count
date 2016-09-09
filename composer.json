@@ -1,5 +1,5 @@
 {
-	"name":"oneiota/count",
+	"name":"itsoneiota/count",
 	"type":"library",
 	"require":{
 		"php":">=5.4"
@@ -9,7 +9,7 @@
 	},
 	"autoload": {
         "psr-4": {
-            "oneiota\\count\\": "src/"
+            "itsoneiota\\count\\": "src/"
         }
     }
 }

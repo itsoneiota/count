@@ -1,5 +1,5 @@
 <?php
-namespace oneiota\count;
+namespace itsoneiota\count;
 /**
  * Mock version of StatsD.
  *

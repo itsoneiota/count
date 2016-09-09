@@ -1,5 +1,5 @@
 <?php
-namespace oneiota\count;
+namespace itsoneiota\count;
 
 /**
  * Static registry for a StatsD instance.

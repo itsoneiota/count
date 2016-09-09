@@ -1,13 +1,13 @@
 <?php
-namespace oneiota\count;
+namespace itsoneiota\count;
 /**
  * Tests for MockStatsD.
  *
  **/
 class MockStatsDTest extends \PHPUnit_Framework_TestCase {
-	
+
 	protected $sut;
-	
+
 	public function setUp() {
 		$this->sut = new MockStatsD();
 	}

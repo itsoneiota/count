@@ -1,5 +1,5 @@
 <?php
-namespace oneiota\count;
+namespace itsoneiota\count;
 /**
  * Sends statistics to the stats daemon over UDP
  *
