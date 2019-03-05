@@ -1,5 +1,7 @@
 <?php
+
 namespace itsoneiota\count;
+
 /**
  * Sends statistics to the stats daemon over UDP
  *
@@ -27,12 +29,14 @@ namespace itsoneiota\count;
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  **/
-class StatsD {
+class StatsD
+{
 
     protected $host;
     protected $port;
 
-    function __construct($host, $port) {
+    function __construct($host, $port)
+    {
         $this->host = $host;
         $this->port = $port;
     }
@@ -43,7 +47,8 @@ class StatsD {
      * @param string|array $stats The metric(s) to set.
      * @param float $time The elapsed time (ms) to log
      **/
-    public function timing($stats, $time) {
+    public function timing($stats, $time)
+    {
         $this->updateStats($stats, $time, 1, 'ms');
     }
 
@@ -53,7 +58,8 @@ class StatsD {
      * @param string|array $stats The metric(s) to set.
      * @param float $value The value for the stats.
      **/
-    public function gauge($stats, $value) {
+    public function gauge($stats, $value)
+    {
         $this->updateStats($stats, $value, 1, 'g');
     }
 
@@ -71,7 +77,8 @@ class StatsD {
      * @param string|array $stats The metric(s) to set.
      * @param float $value The value for the stats.
      **/
-    public function set($stats, $value) {
+    public function set($stats, $value)
+    {
         $this->updateStats($stats, $value, 1, 's');
     }
 
@@ -82,7 +89,8 @@ class StatsD {
      * @param float|1 $sampleRate the rate (0-1) for sampling.
      * @return boolean
      **/
-    public function increment($stats, $sampleRate=1) {
+    public function increment($stats, $sampleRate = 1)
+    {
         $this->updateStats($stats, 1, $sampleRate, 'c');
     }
 
@@ -93,7 +101,8 @@ class StatsD {
      * @param float|1 $sampleRate the rate (0-1) for sampling.
      * @return boolean
      **/
-    public function decrement($stats, $sampleRate=1) {
+    public function decrement($stats, $sampleRate = 1)
+    {
         $this->updateStats($stats, -1, $sampleRate, 'c');
     }
 
@@ -106,10 +115,13 @@ class StatsD {
      * @param string|c $metric The metric type ("c" for count, "ms" for timing, "g" for gauge, "s" for set)
      * @return boolean
      **/
-    public function updateStats($stats, $delta=1, $sampleRate=1, $metric='c') {
-        if (!is_array($stats)) { $stats = array($stats); }
+    public function updateStats($stats, $delta = 1, $sampleRate = 1, $metric = 'c')
+    {
+        if (!is_array($stats)) {
+            $stats = array($stats);
+        }
         $data = array();
-        foreach($stats as $stat) {
+        foreach ($stats as $stat) {
             $data[$stat] = "$delta|$metric";
         }
 
@@ -119,7 +131,8 @@ class StatsD {
     /*
      * Squirt the metrics over UDP
      **/
-    public function send($data, $sampleRate=1) {
+    public function send($data, $sampleRate = 1)
+    {
         // sampling
         $sampledData = array();
 
@@ -133,19 +146,32 @@ class StatsD {
             $sampledData = $data;
         }
 
-        if (empty($sampledData)) { return; }
+        if (empty($sampledData)) {
+            return;
+        }
 
         // Wrap this in a try/catch - failures in any of this should be silently ignored
         try {
             $fp = fsockopen("udp://$this->host", $this->port, $errno, $errstr);
-            if (! $fp) {
+            if (!$fp) {
                 return;
             }
-            foreach ($sampledData as $stat => $value) {
-                fwrite($fp, "$stat:$value");
-            }
+            fwrite($fp, $this->buildWritePayload($sampledData));
             fclose($fp);
         } catch (Exception $e) {
         }
+    }
+
+    public function buildWritePayload(array $sampledData)
+    {
+        $write = "";
+        foreach ($sampledData as $stat => $value) {
+            if ($write === "") {
+                $write .= "$stat:$value";
+            } else {
+                $write .= "\n$stat:$value";
+            }
+        }
+        return $write;
     }
 }
