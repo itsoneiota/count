@@ -4,7 +4,7 @@ namespace itsoneiota\count;
  * Tests for MockStatsD.
  *
  **/
-class MockStatsDTest extends \PHPUnit_Framework_TestCase {
+class MockStatsDTest extends \PHPUnit\Framework\TestCase {
 
 	protected $sut;
 
@@ -49,7 +49,17 @@ class MockStatsDTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(2, $this->sut->getCounter('foo'));
 
 		$this->sut->decrement('foo');
-		$this->assertEquals(1, $this->sut->getCounter('foo'));
+        $this->assertEquals(1, $this->sut->getCounter('foo'));
 	}
+
+    /**
+     * It should merge the UDP payload together into 1 string
+     * @test
+     */
+    public function canBuildUDPPayload() {
+        $payload = ["foo" => "-1|1" , "bar" => "1|-1" ];
+        $response = $this->sut->buildWritePayload($payload);
+        $this->assertEquals( "foo:-1|1\nbar:1|-1" , $response);
+    }
 
 }
