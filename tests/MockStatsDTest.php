@@ -62,4 +62,23 @@ class MockStatsDTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals( "foo:-1|1\nbar:1|-1" , $response);
     }
 
+    public function testCanAddCounterTags()
+    {
+        $payload = ["foo" => "-1|1", "bar" => "1|-1"];
+        $tagString = "|#tagName:value";
+        $response = $this->sut->buildWritePayload($payload, $tagString);
+        $this->assertSame("foo:-1|1|#tagName:value\nbar:1|-1|#tagName:value", $response);
+    }
+
+    public function testCanBuildTagPayload()
+    {
+        $tags = [
+            "tagName" => 'value1',
+            "tagName2" => "value2",
+            "tagName3" => 3,
+        ];
+        $result = $this->sut->buildTagsPayload($tags);
+        $this->assertSame("|#tagName:value1,tagName2:value2,tagName3:3", $result);
+    }
+
 }

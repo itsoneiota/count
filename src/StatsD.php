@@ -113,9 +113,10 @@ class StatsD
      * @param int|1 $delta The amount to increment/decrement each metric by.
      * @param float|1 $sampleRate the rate (0-1) for sampling.
      * @param string|c $metric The metric type ("c" for count, "ms" for timing, "g" for gauge, "s" for set)
+     * @param array $tags
      * @return boolean
      **/
-    public function updateStats($stats, $delta = 1, $sampleRate = 1, $metric = 'c')
+    public function updateStats($stats, $delta = 1, $sampleRate = 1, $metric = 'c',array $tags = [])
     {
         if (!is_array($stats)) {
             $stats = array($stats);
@@ -125,13 +126,13 @@ class StatsD
             $data[$stat] = "$delta|$metric";
         }
 
-        $this->send($data, $sampleRate);
+        $this->send($data, $sampleRate, $tags);
     }
 
     /*
      * Squirt the metrics over UDP
      **/
-    public function send($data, $sampleRate = 1)
+    public function send($data, $sampleRate = 1, array $tags = [])
     {
         // sampling
         $sampledData = array();
@@ -156,22 +157,36 @@ class StatsD
             if (!$fp) {
                 return;
             }
-            fwrite($fp, $this->buildWritePayload($sampledData));
+
+            fwrite($fp, $this->buildWritePayload($sampledData, $this->buildTagsPayload($tags)));
             fclose($fp);
         } catch (Exception $e) {
         }
     }
 
-    public function buildWritePayload(array $sampledData)
+    public function buildWritePayload(array $sampledData,string $tags ="")
     {
         $write = "";
         foreach ($sampledData as $stat => $value) {
             if ($write === "") {
-                $write .= "$stat:$value";
+                $write .= "$stat:$value" . $tags;
             } else {
-                $write .= "\n$stat:$value";
+                $write .= "\n$stat:$value" . $tags;
             }
         }
         return $write;
+    }
+
+    public function buildTagsPayload(array $tags = [])
+    {
+        $tagString = "";
+        foreach ($tags as $tagName => $value) {
+            if ($tagString === "") {
+                $tagString .= "|#" . $tagName . ":" . (string)$value;
+            } else {
+                $tagString .= "," . $tagName . ":" . (string)$value;
+            }
+        }
+        return $tagString;
     }
 }
